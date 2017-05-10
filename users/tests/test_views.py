@@ -36,3 +36,14 @@ class TestRegistrationInitialize:
 
     def test_unclaimed_email_and_existing_profile(self):
         pass
+
+
+import requests
+import responses
+@responses.activate
+def test_dummy():
+    responses.add(responses.GET, 'http://localhost:3000/foo', body='{"foo": 1}', status=200, content_type='application/json')
+    resp = requests.get('http://localhost:3000/foo')
+
+    assert resp.json() == {'foo': 1}
+

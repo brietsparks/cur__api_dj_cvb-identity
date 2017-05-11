@@ -4,7 +4,8 @@ import requests
 class Profiles:
     API_URL = 'https://some-url'
 
-    def get_profile_uuid_by_email_or_none(self, email):
+    @staticmethod
+    def get_profile_uuid_by_email_or_none(email):
         query = """
             query get_email($value: String!) {
                 profile {
@@ -13,10 +14,10 @@ class Profiles:
             }
         """
 
-        resp = requests.get(self.API_URL, params={
-            'query': query,
-            'variables': {'value': email}
-        })
+        # resp = requests.get(Profiles.API_URL, params={
+        #     'query': query,
+        #     'variables': {'value': email}
+        # })
 
         # parse response
         person_uuid = None

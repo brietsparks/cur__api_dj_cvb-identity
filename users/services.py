@@ -6,6 +6,7 @@ class Profiles:
 
     @staticmethod
     def get_profile_uuid_by_email_or_none(email):
+        # todo:
         query = """
             query get_email($value: String!) {
                 profile {
@@ -20,6 +21,13 @@ class Profiles:
         # })
 
         # parse response
+        person_uuid = None
+
+        return person_uuid
+
+    @staticmethod
+    def create_new_profile(email):
+        # todo: (P)-[HAS]->(E), create email if DNE
         person_uuid = None
 
         return person_uuid

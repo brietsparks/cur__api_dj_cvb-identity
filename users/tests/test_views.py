@@ -1,7 +1,7 @@
 from .factories import UserFactory
-from .. import views
+from ..views.registration_initialize import registration_initialize
 from ..services import Profiles, Emails
-from ..tokens import JWT
+from ..tokens import Jwt
 from django.test import RequestFactory
 from rest_framework import status
 import pytest
@@ -19,14 +19,13 @@ invalid_request_inputs = [
 
 
 class TestRegistrationInitialize:
-
     @pytest.mark.parametrize("req_input", invalid_request_inputs)
     def test_missing_username_or_email(self, mocker, req_input):
         mocker.patch.object(Emails, 'send_account_claim_token_email')
         Emails.send_account_claim_token_email.return_value = None
 
         post_req = RequestFactory().post('/', req_input)
-        resp = views.registration_initialize(post_req)
+        resp = registration_initialize(post_req)
         data = resp.data
 
         assert data['usernameInvalid'] is True, \
@@ -36,9 +35,9 @@ class TestRegistrationInitialize:
             'Response data emailInvalid should be True when Request email is invalid'
 
         assert data['usernameClaimed'] is None and \
-               data['emailClaimed'] is None and \
-               data['profileUuid'] is None and \
-               data['claimToken'] is None, \
+            data['emailClaimed'] is None and \
+            data['profileUuid'] is None and \
+            data['claimToken'] is None, \
             'All other response data fields should be None when email or username input is invalid'
 
     def test_existing_username_and_email(self, mocker):
@@ -52,7 +51,7 @@ class TestRegistrationInitialize:
             'email': test_email
         })
 
-        resp = views.registration_initialize(post_req)
+        resp = registration_initialize(post_req)
         data = resp.data
 
         assert resp.data['usernameInvalid'] is False, \
@@ -80,15 +79,15 @@ class TestRegistrationInitialize:
         mocker.patch.object(Profiles, 'get_profile_uuid_by_email_or_none')
         Profiles.get_profile_uuid_by_email_or_none.return_value = 1
 
-        mocker.patch.object(JWT, 'create_token')
-        JWT.create_token.return_value = 'mocked.jwt.string'
+        mocker.patch.object(Jwt, 'create_token')
+        Jwt.create_token.return_value = 'mocked.jwt.string'
 
         post_req = RequestFactory().post('/', {
             'username': test_username,
             'email': test_email
         })
 
-        resp = views.registration_initialize(post_req)
+        resp = registration_initialize(post_req)
         data = resp.data
 
         assert resp.data['usernameInvalid'] is False, \
@@ -116,15 +115,15 @@ class TestRegistrationInitialize:
         mocker.patch.object(Profiles, 'get_profile_uuid_by_email_or_none')
         Profiles.get_profile_uuid_by_email_or_none.return_value = None
 
-        mocker.patch.object(JWT, 'create_token')
-        JWT.create_token.return_value = 'mocked.jwt.string'
+        mocker.patch.object(Jwt, 'create_token')
+        Jwt.create_token.return_value = 'mocked.jwt.string'
 
         post_req = RequestFactory().post('/', {
             'username': test_username,
             'email': test_email
         })
 
-        resp = views.registration_initialize(post_req)
+        resp = registration_initialize(post_req)
         data = resp.data
 
         assert resp.data['usernameInvalid'] is False, \
@@ -148,20 +147,19 @@ class TestRegistrationInitialize:
 
 
 
-    # @responses.activate
-    # def test_unclaimed_but_existing_profile(self):
-    #     post_req = RequestFactory().post('/', {
-    #         'username': test_username,
-    #         'email': test_email
-    #     })
-    #
-    #     responses.add(responses.GET, views.PROFILES_API,
-    #                   body='{"person_uuid": "some_email@test.com"}',
-    #                   status=200,
-    #                   content_type='application/json'
-    #                   )
-    #     resp = views.registration_initialize(post_req)
-
+        # @responses.activate
+        # def test_unclaimed_but_existing_profile(self):
+        #     post_req = RequestFactory().post('/', {
+        #         'username': test_username,
+        #         'email': test_email
+        #     })
+        #
+        #     responses.add(responses.GET, views.PROFILES_API,
+        #                   body='{"person_uuid": "some_email@test.com"}',
+        #                   status=200,
+        #                   content_type='application/json'
+        #                   )
+        #     resp = registration_initialize(post_req)
 
 # @responses.activate
 # def test_dummy():
@@ -169,4 +167,3 @@ class TestRegistrationInitialize:
 #     resp = requests.get('http://localhost:3000/foo')
 #
 #     assert resp.json() == {'foo': 1}
-

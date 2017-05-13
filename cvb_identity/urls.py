@@ -21,5 +21,6 @@ import users.views
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
 
-    url(r'^register-initialize/', users.views.registration_initialize)
+    url(r'^register-initialize/', users.views.registration_initialize.registration_initialize),
+    url(r'^register-finalize/', users.views.registration_finalize.registration_finalize)
 ]

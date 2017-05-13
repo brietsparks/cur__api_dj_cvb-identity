@@ -1,32 +1,38 @@
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework import status
 from users.models import User
 from .services import Profiles, Emails
 from .tokens import JWT
+import jwt
 
 CLAIM_TOKEN_DURATION_SECONDS = 600
 
 
 @api_view(['POST'])
 def registration_initialize(request):
-    username = request.data['username']
-    email = request.data['email']
     response_data = {
-        'usernameClaimed': False,
-        'emailClaimed': False,
+        'emailInvalid': not request_has_valid_email(request),
+        'usernameInvalid': not request_has_valid_username(request),
+        'emailClaimed': None,
+        'usernameClaimed': None,
         'profileUuid': None,
         'claimToken': None
     }
 
+    # validate input
+    if response_data['emailInvalid'] or response_data['usernameInvalid']:
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+    username = request.data['username']
+    email = request.data['email']
+
     # check if the user exists
-    exists = False
-    if User.objects.filter(username=username).exists():
-        exists = True
-        response_data['usernameClaimed'] = True
-    if User.objects.filter(email=email).exists():
-        exists = True
-        response_data['emailClaimed'] = True
-    if exists:
+    response_data['emailClaimed'] = User.objects.filter(email=email).exists()
+    response_data['usernameClaimed'] = User.objects.filter(username=username).exists()
+    if response_data['emailClaimed'] or response_data['usernameClaimed']:
         return Response(response_data)
 
     # check if the profile exists
@@ -43,3 +49,28 @@ def registration_initialize(request):
                                    email=email, username=username)
     response_data['claimToken'] = claim_token
     return Response(response_data)
+
+
+def registration_finalize(request):
+    claim_token = request.data['claimToken']
+    password = request.data['password']
+
+    decoded = jwt.decode(claim_token, JWT.secret)
+
+
+def request_has_valid_email(request):
+    data = request.data
+    if 'email' not in data:
+        return False
+    try:
+        validate_email(data['email'])
+        return True
+    except ValidationError:
+        return False
+
+
+def request_has_valid_username(request):
+    data = request.data
+    return 'username' in data and \
+           data['username'] is not None and \
+           len(request.data['username']) > 0

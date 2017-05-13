@@ -3,6 +3,7 @@ from .. import views
 from ..services import Profiles, Emails
 from ..tokens import JWT
 from django.test import RequestFactory
+from rest_framework import status
 import pytest
 import jwt
 
@@ -10,8 +11,36 @@ pytestmark = pytest.mark.django_db
 test_username = 'test_username'
 test_email = 'test@test.test'
 
+invalid_request_inputs = [
+    {},
+    {'username': '', 'email': ''},
+    # {'username': None, 'email': None} # todo: get this working
+]
+
 
 class TestRegistrationInitialize:
+
+    @pytest.mark.parametrize("req_input", invalid_request_inputs)
+    def test_missing_username_or_email(self, mocker, req_input):
+        mocker.patch.object(Emails, 'send_account_claim_token_email')
+        Emails.send_account_claim_token_email.return_value = None
+
+        post_req = RequestFactory().post('/', req_input)
+        resp = views.registration_initialize(post_req)
+        data = resp.data
+
+        assert data['usernameInvalid'] is True, \
+            'Response data usernameInvalid should be True when Request username is invalid'
+
+        assert data['emailInvalid'] is True, \
+            'Response data emailInvalid should be True when Request email is invalid'
+
+        assert data['usernameClaimed'] is None and \
+               data['emailClaimed'] is None and \
+               data['profileUuid'] is None and \
+               data['claimToken'] is None, \
+            'All other response data fields should be None when email or username input is invalid'
+
     def test_existing_username_and_email(self, mocker):
         mocker.patch.object(Emails, 'send_account_claim_token_email')
         Emails.send_account_claim_token_email.return_value = None
@@ -24,17 +53,24 @@ class TestRegistrationInitialize:
         })
 
         resp = views.registration_initialize(post_req)
+        data = resp.data
 
-        assert resp.data['usernameClaimed'], \
+        assert resp.data['usernameInvalid'] is False, \
+            'Response data usernameInvalid should be False when Request valid username is given'
+
+        assert resp.data['emailInvalid'] is False, \
+            'Response data emailInvalid should be False when Request valid email is given'
+
+        assert data['usernameClaimed'], \
             'Response data usernameClaimed should be True when a user is registered with that username'
 
-        assert resp.data['emailClaimed'], \
+        assert data['emailClaimed'], \
             'Response data emailClaimed should be True when a user is registered with that email'
 
-        assert resp.data['profileUuid'] is None, \
+        assert data['profileUuid'] is None, \
             'Response data profile_uuid should be None when a user is registered with that email or username'
 
-        assert resp.data['claimToken'] is None, \
+        assert data['claimToken'] is None, \
             'Response data claimToken should be None when a user is registered with that email or username'
 
     def test_unclaimed_but_existing_profile(self, mocker):
@@ -53,17 +89,24 @@ class TestRegistrationInitialize:
         })
 
         resp = views.registration_initialize(post_req)
+        data = resp.data
 
-        assert resp.data['usernameClaimed'] is False, \
+        assert resp.data['usernameInvalid'] is False, \
+            'Response data usernameInvalid should be False when Request valid username is given'
+
+        assert resp.data['emailInvalid'] is False, \
+            'Response data emailInvalid should be False when Request valid email is given'
+
+        assert data['usernameClaimed'] is False, \
             'Response data usernameClaimed should be False when a username is unclaimed'
 
-        assert resp.data['emailClaimed'] is False, \
+        assert data['emailClaimed'] is False, \
             'Response data emailClaimed should be True when an email is unclaimed'
 
-        assert resp.data['profileUuid'] is None, \
+        assert data['profileUuid'] is None, \
             'Response data profile_uuid should be None when a profile is unclaimed (it is sent via email)'
 
-        assert resp.data['claimToken'] is None, \
+        assert data['claimToken'] is None, \
             'Response data claimToken should be None when a profile is unclaimed (it is sent via email)'
 
     def test_non_existent_profile(self, mocker):
@@ -82,17 +125,24 @@ class TestRegistrationInitialize:
         })
 
         resp = views.registration_initialize(post_req)
+        data = resp.data
 
-        assert resp.data['usernameClaimed'] is False, \
+        assert resp.data['usernameInvalid'] is False, \
+            'Response data usernameInvalid should be False when Request valid username is given'
+
+        assert resp.data['emailInvalid'] is False, \
+            'Response data emailInvalid should be False when Request valid email is given'
+
+        assert data['usernameClaimed'] is False, \
             'Response data usernameClaimed should be False when a username is non-existent'
 
-        assert resp.data['emailClaimed'] is False, \
+        assert data['emailClaimed'] is False, \
             'Response data emailClaimed should be True when an email is non-existent'
 
-        assert resp.data['profileUuid'] is None, \
+        assert data['profileUuid'] is None, \
             'Response data profile_uuid should be None when a profile is non-existent'
 
-        assert resp.data['claimToken'] is 'mocked.jwt.string', \
+        assert data['claimToken'] is 'mocked.jwt.string', \
             'Response data claimToken should be a jwt string when a profile is non-existent'
 
 

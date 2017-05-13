@@ -36,7 +36,6 @@ class TestRegistrationInitialize:
 
         assert data['usernameClaimed'] is None and \
             data['emailClaimed'] is None and \
-            data['profileUuid'] is None and \
             data['claimToken'] is None, \
             'All other response data fields should be None when email or username input is invalid'
 
@@ -65,9 +64,6 @@ class TestRegistrationInitialize:
 
         assert data['emailClaimed'], \
             'Response data emailClaimed should be True when a user is registered with that email'
-
-        assert data['profileUuid'] is None, \
-            'Response data profile_uuid should be None when a user is registered with that email or username'
 
         assert data['claimToken'] is None, \
             'Response data claimToken should be None when a user is registered with that email or username'
@@ -102,9 +98,6 @@ class TestRegistrationInitialize:
         assert data['emailClaimed'] is False, \
             'Response data emailClaimed should be True when an email is unclaimed'
 
-        assert data['profileUuid'] is None, \
-            'Response data profile_uuid should be None when a profile is unclaimed (it is sent via email)'
-
         assert data['claimToken'] is None, \
             'Response data claimToken should be None when a profile is unclaimed (it is sent via email)'
 
@@ -137,9 +130,6 @@ class TestRegistrationInitialize:
 
         assert data['emailClaimed'] is False, \
             'Response data emailClaimed should be True when an email is non-existent'
-
-        assert data['profileUuid'] is None, \
-            'Response data profile_uuid should be None when a profile is non-existent'
 
         assert data['claimToken'] is 'mocked.jwt.string', \
             'Response data claimToken should be a jwt string when a profile is non-existent'

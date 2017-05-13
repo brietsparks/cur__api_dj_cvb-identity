@@ -16,11 +16,12 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 
-import users.views
+from users.views.registration_initialize import registration_initialize
+from users.views.registration_finalize import registration_finalize
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
 
-    url(r'^register-initialize/', users.views.registration_initialize.registration_initialize),
-    url(r'^register-finalize/', users.views.registration_finalize.registration_finalize)
+    url(r'^register-initialize/', registration_initialize),
+    url(r'^register-finalize/', registration_finalize)
 ]

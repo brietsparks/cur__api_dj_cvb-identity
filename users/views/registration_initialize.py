@@ -17,7 +17,6 @@ def registration_initialize(request):
         'usernameInvalid': not _request_has_valid_username(request),
         'emailClaimed': None,
         'usernameClaimed': None,
-        'profileUuid': None,
         'claimToken': None
     }
 

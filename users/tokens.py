@@ -1,11 +1,8 @@
 import jwt
 import time
-from jwt import DecodeError
+from jwt import DecodeError, ExpiredSignatureError
 
 
-"""
-Wraps jwt
-"""
 class Jwt:
     issuer = 'me'
     secret = 'secret'
@@ -22,7 +19,4 @@ class Jwt:
 
     @staticmethod
     def decode_token(token):
-        try:
-            return jwt.decode(token, key=Jwt.secret)
-        except DecodeError:
-            return False
+        return jwt.decode(token, key=Jwt.secret)

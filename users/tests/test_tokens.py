@@ -31,14 +31,3 @@ class TestJwt:
         token = Jwt.create_token(duration_seconds=100)
         decoded = jwt.decode(token, verify=False)
         assert decoded['exp'] == later
-
-    def test_decode_token_decodes_a_valid_token(self):
-        payload = {'payload_a': 1234, 'payload_b': 5678}
-        encoded = jwt.encode(payload, Jwt.secret)
-        decoded = Jwt.decode_token(encoded)
-        assert decoded == payload
-
-    def test_decode_token_returns_false_for_an_invalid_token(self):
-        encoded = jwt.encode({}, 'different_secret')
-        decoded = Jwt.decode_token(encoded)
-        return decoded == False

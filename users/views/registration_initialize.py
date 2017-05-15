@@ -17,6 +17,7 @@ def registration_initialize(request):
         'usernameInvalid': not _request_has_valid_username(request),
         'emailClaimed': None,
         'usernameClaimed': None,
+        'profileExists': None,
         'claimToken': None
     }
 
@@ -33,19 +34,16 @@ def registration_initialize(request):
     if response_data['emailClaimed'] or response_data['usernameClaimed']:
         return Response(response_data)
 
+    response_claim_token = Jwt.create_token(duration_seconds=CLAIM_TOKEN_DURATION_SECONDS, email=email, username=username)
+    response_data['claimToken'] = response_claim_token
+
     # check if the profile exists
     profile_uuid = Profiles.get_profile_uuid_by_email_or_none(email)
-    if profile_uuid:
-        claim_token = Jwt.create_token(duration_seconds=CLAIM_TOKEN_DURATION_SECONDS,
-                                       profile_uuid=profile_uuid, email=email, username=username)
-        # send the claim token in the email
-        Emails.send_account_claim_token_email(email, claim_token)
-        # return the response without the claim token
-        return Response(response_data)
+    response_data['profileExists'] = profile_uuid is not None
+    if response_data['profileExists']:
+        email_claim_token = Jwt.create_token(duration_seconds=CLAIM_TOKEN_DURATION_SECONDS, profileUuid=profile_uuid, email=email, username=username)
+        Emails.send_account_claim_token_email(email, email_claim_token)
 
-    claim_token = Jwt.create_token(duration_seconds=CLAIM_TOKEN_DURATION_SECONDS,
-                                   email=email, username=username)
-    response_data['claimToken'] = claim_token
     return Response(response_data)
 
 

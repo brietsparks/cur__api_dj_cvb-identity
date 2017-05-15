@@ -1,7 +1,7 @@
-from .factories import UserFactory
-from ..views.registration_initialize import registration_initialize
-from ..services import Profiles, Emails
-from ..tokens import Jwt
+from users.tests.factories import UserFactory
+from users.views.registration_initialize import registration_initialize
+from users.services import Profiles, Emails
+from users.tokens import Jwt
 from django.test import RequestFactory
 from rest_framework import status
 import pytest
@@ -59,11 +59,14 @@ class TestRegistrationInitialize:
         assert resp.data['emailInvalid'] is False, \
             'Response data emailInvalid should be False when Request valid email is given'
 
-        assert data['usernameClaimed'], \
+        assert data['usernameClaimed'] is True, \
             'Response data usernameClaimed should be True when a user is registered with that username'
 
-        assert data['emailClaimed'], \
+        assert data['emailClaimed'] is True, \
             'Response data emailClaimed should be True when a user is registered with that email'
+
+        assert data['profileExists'] is None, \
+            'Response data profileExists should be None when a user is registered with that email'
 
         assert data['claimToken'] is None, \
             'Response data claimToken should be None when a user is registered with that email or username'
@@ -74,6 +77,9 @@ class TestRegistrationInitialize:
 
         mocker.patch.object(Profiles, 'get_profile_uuid_by_email_or_none')
         Profiles.get_profile_uuid_by_email_or_none.return_value = 1
+
+        mocker.patch.object(Jwt, 'create_token')
+        Jwt.create_token.return_value = 'mocked.jwt.string'
 
         mocker.patch.object(Jwt, 'create_token')
         Jwt.create_token.return_value = 'mocked.jwt.string'
@@ -98,8 +104,11 @@ class TestRegistrationInitialize:
         assert data['emailClaimed'] is False, \
             'Response data emailClaimed should be True when an email is unclaimed'
 
-        assert data['claimToken'] is None, \
-            'Response data claimToken should be None when a profile is unclaimed (it is sent via email)'
+        assert data['profileExists'] is True, \
+            'Response data profileExists should be True when a profile is unclaimed'
+
+        assert data['claimToken'] is 'mocked.jwt.string', \
+            'Response data claimToken should be a jwt string when a profile is unclaimed'
 
     def test_non_existent_profile(self, mocker):
         mocker.patch.object(Emails, 'send_account_claim_token_email')

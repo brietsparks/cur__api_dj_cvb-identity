@@ -12,19 +12,21 @@ import jwt
 
 @api_view(['POST'])
 def registration_finalize(request):
+    # initial response data, which gets changed throughout the procedure
     response_data = {
         'claimTokenInvalid': not _request_has_valid_claim_token(request),
         'passwordInvalid': not _request_has_valid_password(request),
         'authToken': None
     }
 
+    # if data is invalid, return a 400
     if response_data['claimTokenInvalid'] or response_data['passwordInvalid']:
         return Response(response_data, status.HTTP_400_BAD_REQUEST)
 
     # todo: authenticate and return authToken
-    token_data = Jwt(encoded=request.data['claimToken']).decode()
-    if 'profile_uuid' not in token_data:
-        profile_uuid = Profiles.create_new_profile(token_data['email'])
+    claim_token_data = Jwt.decode_token(request.data['claimToken'])
+    if 'profile_uuid' not in claim_token_data:
+        profile_uuid = Profiles.create_new_profile(claim_token_data['email'])
     else:
         profile_uuid = request.data['profile_uuid']
 

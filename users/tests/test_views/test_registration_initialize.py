@@ -20,7 +20,7 @@ invalid_request_inputs = [
 
 class TestRegistrationInitialize:
     @pytest.mark.parametrize("req_input", invalid_request_inputs)
-    def test_missing_username_or_email(self, mocker, req_input):
+    def test_missing_username_and_email(self, mocker, req_input):
         mocker.patch.object(Emails, 'send_account_claim_token_email')
         Emails.send_account_claim_token_email.return_value = None
 

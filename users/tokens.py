@@ -1,5 +1,6 @@
 import jwt
 import time
+from jwt import DecodeError
 
 
 """
@@ -21,7 +22,7 @@ class Jwt:
 
     @staticmethod
     def decode_token(token):
-        return jwt.decode(token, key=Jwt.secret)
-
-
-
+        try:
+            return jwt.decode(token, key=Jwt.secret)
+        except DecodeError:
+            return False

@@ -1,4 +1,3 @@
-import pytest
 from users.tokens import Jwt
 import jwt
 import time
@@ -7,7 +6,7 @@ import time
 class TestJwt:
     def test_create_token_returns_a_jwt_signed_with_secret(self):
         token = Jwt.create_token()
-        jwt.decode(token, Jwt.secret) # if fails, expection will throw
+        jwt.decode(token, Jwt.secret)  # if fails, exception will be raised
 
     def test_create_token_returns_a_jwt_with_given_kwargs_as_payload(self):
         token = Jwt.create_token(payload_a=1234, payload_b=5678)
@@ -33,5 +32,13 @@ class TestJwt:
         decoded = jwt.decode(token, verify=False)
         assert decoded['exp'] == later
 
+    def test_decode_token_decodes_a_valid_token(self):
+        payload = {'payload_a': 1234, 'payload_b': 5678}
+        encoded = jwt.encode(payload, Jwt.secret)
+        decoded = Jwt.decode_token(encoded)
+        assert decoded == payload
 
-
+    def test_decode_token_returns_false_for_an_invalid_token(self):
+        encoded = jwt.encode({}, 'different_secret')
+        decoded = Jwt.decode_token(encoded)
+        return decoded == False

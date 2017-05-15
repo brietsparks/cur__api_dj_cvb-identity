@@ -3,7 +3,6 @@ from users.views.registration_initialize import registration_initialize
 from users.services import Profiles, Emails
 from users.tokens import Jwt
 from django.test import RequestFactory
-from rest_framework import status
 import pytest
 import jwt
 
@@ -27,6 +26,8 @@ class TestRegistrationInitialize:
         post_req = RequestFactory().post('/', req_input)
         resp = registration_initialize(post_req)
         data = resp.data
+
+        assert resp.status_code == 400
 
         assert data['usernameInvalid'] is True, \
             'Response data usernameInvalid should be True when Request username is invalid'
@@ -52,6 +53,8 @@ class TestRegistrationInitialize:
 
         resp = registration_initialize(post_req)
         data = resp.data
+
+        assert resp.status_code == 400
 
         assert resp.data['usernameInvalid'] is False, \
             'Response data usernameInvalid should be False when Request valid username is given'
@@ -92,6 +95,8 @@ class TestRegistrationInitialize:
         resp = registration_initialize(post_req)
         data = resp.data
 
+        assert resp.status_code == 200
+
         assert resp.data['usernameInvalid'] is False, \
             'Response data usernameInvalid should be False when Request valid username is given'
 
@@ -127,6 +132,8 @@ class TestRegistrationInitialize:
 
         resp = registration_initialize(post_req)
         data = resp.data
+
+        assert resp.status_code == 200
 
         assert resp.data['usernameInvalid'] is False, \
             'Response data usernameInvalid should be False when Request valid username is given'

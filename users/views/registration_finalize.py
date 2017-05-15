@@ -35,11 +35,11 @@ def registration_finalize(request):
     username = claim_token_data['username']
 
     # check if the user exists, which is unlikely at this point
-    email_claimed = User.objects.filter(email=email).exists()
-    username_claimed = User.objects.filter(username=username).exists()
+    response_data['emailClaimed'] = User.objects.filter(email=email).exists()
+    response_data['usernameClaimed'] = User.objects.filter(username=username).exists()
 
     # if either the email or username is taken, return a 400
-    if email_claimed or username_claimed:
+    if response_data['emailClaimed'] or response_data['usernameClaimed']:
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
     # get the profile_uuid
@@ -65,5 +65,4 @@ def _request_has_valid_password(request):
     return 'password' in data and \
            data['password'] is not None and \
            len(request.data['password']) > 2
-
 

@@ -13,7 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.contrib import admin
 
 from users.views.registration_initialize import registration_initialize
@@ -22,6 +22,8 @@ from users.views.registration_finalize import registration_finalize
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
 
-    url(r'^register-initialize/', registration_initialize),
-    url(r'^register-finalize/', registration_finalize)
+    url(r'^register-initialize/$', registration_initialize),
+    url(r'^register-finalize/$', registration_finalize),
+
+    url(r'api/auth/', include('knox.urls'))
 ]

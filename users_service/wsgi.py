@@ -1,5 +1,5 @@
 """
-WSGI config for cvb_identity project.
+WSGI config for users_service project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "cvb_identity.settings.base")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "users_service.settings.base")
 
 application = get_wsgi_application()

@@ -69,8 +69,32 @@ class TestRegistrationFinalize:
         assert data['usernameClaimed'] is True, \
             'Response data usernameClaimed should be True when Request existing username or email'
 
-    # def test_unclaimed_but_existing_profile(self, mocker):
-    #     mocker.patch.object(Profiles, 'create_new_profile')
-    #     Profiles.create_new_profile.return_value = 1
+        assert data['authToken'] is None, \
+            'Response data authToken should be None when Request existing username or email'
 
+    def test_unclaimed_but_existing_profile(self, mocker):
+        mocker.patch.object(Profiles, 'create_new_profile')
+        Profiles.create_new_profile.return_value = 1
 
+        claim_token = create_claim_token().decode()
+        post_req = RequestFactory().post('/', {
+            'claimToken': claim_token,
+            'password': test_password
+        })
+
+        resp = registration_finalize(post_req)
+        data = resp.data
+
+        assert resp.status_code == 200
+
+        assert data['claimTokenInvalid'] is False, \
+            'Response data claimTokenInvalid should be False when profile is existing but unclaimed'
+
+        assert data['emailClaimed'] is False, \
+            'Response data emailClaimed should be True when profile is existing but unclaimed'
+
+        assert data['usernameClaimed'] is False, \
+            'Response data usernameClaimed should be True when profile is existing but unclaimed'
+
+        assert isinstance(data['authToken'], str), \
+            'Response data authToken should be ____ when profile is existing but unclaimed'

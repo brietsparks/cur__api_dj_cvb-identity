@@ -4,6 +4,7 @@ from jwt import DecodeError, ExpiredSignatureError
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
+from knox.models import AuthToken
 from users.models import User
 from ..services import Profiles, Emails
 from ..tokens import Jwt
@@ -50,6 +51,9 @@ def registration_finalize(request):
 
     # create the user
     user = User.objects.create(email=email, username=username, password=password, profile_uuid=profile_uuid)
+    response_data['authToken'] = AuthToken.objects.create(user=user)
+
+    return Response(response_data)
 
 
 def _request_has_valid_claim_token(request):
